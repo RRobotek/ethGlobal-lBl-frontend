@@ -5,6 +5,7 @@ import { useSwipeable } from "react-swipeable";
 import { Box, Button, VStack, Text, Flex, useToast, Spinner, Icon } from "@chakra-ui/react";
 import { FaTag } from "react-icons/fa";
 
+
 const BUFFER_SIZE = 5;
 
 export default function FeedPage() {
@@ -139,6 +140,7 @@ export default function FeedPage() {
       transform={`translateY(${(index - currentIndex + swipeDirection) * 100}%)`}
       transition="transform 0.3s ease-out"
       overflow="hidden"
+      bg="#f5f1e8"
     >
       {/* Blurred background */}
       <Box
@@ -152,6 +154,7 @@ export default function FeedPage() {
         backgroundPosition="center"
         filter="blur(20px)"
         transform="scale(1.1)"
+        opacity={0.5}
       />
       {/* Main image */}
       <Flex 
@@ -165,9 +168,11 @@ export default function FeedPage() {
           src={`data:image/png;base64,${post.url}`}
           alt={`Feed item ${index}`} 
           style={{
-            maxWidth: '100%',
-            maxHeight: '100%',
+            maxWidth: '90%',
+            maxHeight: '90%',
             objectFit: 'contain',
+            border: '2px solid black',
+            borderRadius: '8px',
           }}
         />
       </Flex>
@@ -177,7 +182,7 @@ export default function FeedPage() {
         left={0} 
         right={0} 
         p={4} 
-        bg="rgba(0,0,0,0.7)"
+        bg="rgba(245, 241, 232, 0.8)"
       >
         <Flex wrap="wrap" justify="center">
           {post.label_options.map((label, labelIndex) => (
@@ -187,8 +192,10 @@ export default function FeedPage() {
               m={1}
               size="lg"
               variant="outline"
-              color="white"
-              _hover={{ bg: "whiteAlpha.200" }}
+              color="black"
+              borderColor="black"
+              bg="#ffd598"
+              _hover={{ bg: "#f5f1e8" }}
             >
               {label}
             </Button>
@@ -200,7 +207,7 @@ export default function FeedPage() {
 
   return (
     <Layout>
-      <Box height="100vh" overflow="hidden" position="relative" {...handlers}>
+      <Box height="100vh" overflow="hidden" position="relative" {...handlers} bg="#f5f1e8">
         {posts.length > 0 ? (
           <>
             {posts.map((post, index) => renderPost(post, index))}
@@ -210,16 +217,16 @@ export default function FeedPage() {
             justify="center" 
             align="center" 
             height="100%" 
-            bg="gray.900"
-            color="white"
+            bg="#f5f1e8"
+            color="black"
           >
             <VStack spacing={6}>
-              <Icon as={FaTag} boxSize={12} color="blue.400" />
-              <Spinner size="xl" color="blue.400" />
+              <Icon as={FaTag} boxSize={12} color="#ffd598" />
+              <Spinner size="xl" color="#ffd598" />
               <Text fontSize="2xl" fontWeight="bold">
                 Loading Feed
               </Text>
-              <Text fontSize="md" color="gray.400" textAlign="center">
+              <Text fontSize="md" color="gray.600" textAlign="center">
                 We're gathering the latest posts for you.
                 <br />
                 This won't take long!
@@ -229,6 +236,5 @@ export default function FeedPage() {
         )}
       </Box>
     </Layout>
-
   );
 }

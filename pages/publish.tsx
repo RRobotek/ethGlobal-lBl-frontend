@@ -188,10 +188,10 @@ export default function PublishDatasetPage() {
 
   return (
     <Layout>
-      <Box minHeight="100vh" bg="black" color="gray.300" pt="70px">
+      <Box minHeight="100vh" bg="#f5f1e8" color="black" pt="70px">
         <Box maxWidth="500px" margin="auto" width="100%" p={4}>
           <VStack spacing={8} align="stretch">
-            <Heading as="h1" size="xl" textAlign="center" color="white">
+            <Heading as="h1" size="xl" textAlign="center" color="black">
               <FaDatabase /> Publish Dataset
             </Heading>
             
@@ -200,9 +200,9 @@ export default function PublishDatasetPage() {
               value={datasetName}
               onChange={(e) => setDatasetName(e.target.value)}
               variant="filled"
-              bg="gray.800"
-              _hover={{ bg: "gray.700" }}
-              _focus={{ bg: "gray.700", borderColor: "gray.600" }}
+              bg="white"
+              _hover={{ bg: "#ffd598" }}
+              _focus={{ bg: "#ffd598", borderColor: "black" }}
             />
 
             <Textarea
@@ -210,9 +210,9 @@ export default function PublishDatasetPage() {
               value={datasetDescription}
               onChange={(e) => setDatasetDescription(e.target.value)}
               variant="filled"
-              bg="gray.800"
-              _hover={{ bg: "gray.700" }}
-              _focus={{ bg: "gray.700", borderColor: "gray.600" }}
+              bg="white"
+              _hover={{ bg: "#ffd598" }}
+              _focus={{ bg: "#ffd598", borderColor: "black" }}
             />
 
             <Box>
@@ -233,6 +233,9 @@ export default function PublishDatasetPage() {
                     flex={1}
                     variant="outline"
                     leftIcon={<AttachmentIcon />}
+                    borderColor="black"
+                    color="black"
+                    _hover={{ bg: "#ffd598" }}
                   >
                     Select Files
                   </Button>
@@ -243,6 +246,9 @@ export default function PublishDatasetPage() {
                     ml={2}
                     variant="outline"
                     leftIcon={<FaFolderOpen />}
+                    borderColor="black"
+                    color="black"
+                    _hover={{ bg: "#ffd598" }}
                   >
                     Select Directory
                   </Button>
@@ -250,122 +256,131 @@ export default function PublishDatasetPage() {
               </Flex>
             </Box>
 
-            {files.length > 0 && (
-              <Flex align="center" justify="center">
-                <Text fontSize="sm">
-                  <FaImage /> {files.length} file{files.length > 1 ? 's' : ''} selected
-                </Text>
-              </Flex>
-            )}
+           {files.length > 0 && (
+          <Flex align="center" justify="center">
+            <Text fontSize="sm" color="black">
+              <FaImage /> {files.length} file{files.length > 1 ? 's' : ''} selected
+            </Text>
+          </Flex>
+        )}
 
-            {previewUrls.length > 0 && (
-              <AspectRatio ratio={16/9} width="100%" maxHeight="60vh">
-                <Box 
-                  borderRadius="md"
-                  overflow="hidden"
-                  border="1px solid"
-                  borderColor="gray.700"
-                >
-                  {previewUrls.map((url, index) => (
-                    <Image 
-                      key={index}
-                      src={url}
-                      alt={`Preview ${index}`}
-                      objectFit="cover"
-                      width="100%"
-                      height="100%"
-                      position="absolute"
-                      top={0}
-                      left={0}
-                      opacity={index === 0 ? 1 : 0}
-                      transition="opacity 0.3s ease-in-out"
-                    />
-                  ))}
-                </Box>
-              </AspectRatio>
-            )}
-
-            <VStack spacing={4}>
-              <Flex align="center" width="full">
-                <FaTags />
-                <Text ml={2} fontWeight="bold">Label Options</Text>
-              </Flex>
-              {labelOptions.map((option, index) => (
-                <Flex key={index} width="full">
-                  <Input
-                    placeholder={`Label option ${index + 1}`}
-                    value={option}
-                    onChange={(e) => handleLabelOptionChange(index, e.target.value)}
-                    mr={2}
-                    variant="filled"
-                    bg="gray.800"
-                    _hover={{ bg: "gray.700" }}
-                    _focus={{ bg: "gray.700", borderColor: "gray.600" }}
-                  />
-                  {index >= 2 && (
-                    <IconButton
-                      aria-label="Remove label option"
-                      icon={<CloseIcon />}
-                      onClick={() => removeLabelOption(index)}
-                      size="sm"
-                      variant="ghost"
-                    />
-                  )}
-                </Flex>
+        {previewUrls.length > 0 && (
+          <AspectRatio ratio={16/9} width="100%" maxHeight="60vh">
+            <Box 
+              borderRadius="md"
+              overflow="hidden"
+              border="1px solid"
+              borderColor="black"
+            >
+              {previewUrls.map((url, index) => (
+                <Image 
+                  key={index}
+                  src={url}
+                  alt={`Preview ${index}`}
+                  objectFit="cover"
+                  width="100%"
+                  height="100%"
+                  position="absolute"
+                  top={0}
+                  left={0}
+                  opacity={index === 0 ? 1 : 0}
+                  transition="opacity 0.3s ease-in-out"
+                />
               ))}
-              <Button 
-                leftIcon={<FaPlus />} 
-                onClick={addLabelOption} 
-                size="sm"
-                variant="ghost"
-              >
-                Add Label Option
-              </Button>
-            </VStack>
+            </Box>
+          </AspectRatio>
+        )}
 
-            <Divider borderColor="gray.700" />
-
-            <Flex align="center" width="full">
-              <FaEthereum />
-              <Text ml={2} fontWeight="bold">Set Price (ETH)</Text>
-            </Flex>
-            <NumberInput 
-              value={price} 
-              onChange={(valueString) => setPrice(valueString)}
-              min={0} 
-              precision={2} 
-              step={0.01}
-            >
-              <NumberInputField bg="gray.800" border="none" _focus={{ borderColor: "gray.600" }} />
-              <NumberInputStepper>
-                <NumberIncrementStepper borderColor="gray.700" color="white" />
-                <NumberDecrementStepper borderColor="gray.700" color="white" />
-              </NumberInputStepper>
-            </NumberInput>
-
-            <Button 
-              onClick={handleSubmit}
-              variant="outline"
-              isLoading={uploadProgress > 0 && uploadProgress < 100}
-              loadingText="Uploading..."
-              leftIcon={<FaUpload />}
-              size="lg"
-            >
-              Publish Dataset
-            </Button>
-
-            {uploadProgress > 0 && (
-              <Progress 
-                value={uploadProgress} 
-                size="sm" 
-                colorScheme="blue" 
-                borderRadius="full"
-                bg="gray.800"
+        <VStack spacing={4}>
+          <Flex align="center" width="full">
+            <FaTags color="black" />
+            <Text ml={2} fontWeight="bold" color="black">Label Options</Text>
+          </Flex>
+          {labelOptions.map((option, index) => (
+            <Flex key={index} width="full">
+              <Input
+                placeholder={`Label option ${index + 1}`}
+                value={option}
+                onChange={(e) => handleLabelOptionChange(index, e.target.value)}
+                mr={2}
+                variant="filled"
+                bg="white"
+                color="black"
+                _hover={{ bg: "#ffd598" }}
+                _focus={{ bg: "#ffd598", borderColor: "black" }}
               />
-            )}
-          </VStack>
-        </Box>
-      </Box>
-    </Layout>
+              {index >= 2 && (
+                <IconButton
+                  aria-label="Remove label option"
+                  icon={<CloseIcon />}
+                  onClick={() => removeLabelOption(index)}
+                  size="sm"
+                  variant="ghost"
+                  color="black"
+                  _hover={{ bg: "#ffd598" }}
+                />
+              )}
+            </Flex>
+          ))}
+          <Button 
+            leftIcon={<FaPlus />} 
+            onClick={addLabelOption} 
+            size="sm"
+            variant="ghost"
+            color="black"
+            _hover={{ bg: "#ffd598" }}
+          >
+            Add Label Option
+          </Button>
+        </VStack>
+
+        <Divider borderColor="black" />
+
+        <Flex align="center" width="full">
+          <FaEthereum color="black" />
+          <Text ml={2} fontWeight="bold" color="black">Set Price (ETH)</Text>
+        </Flex>
+        <NumberInput 
+          value={price} 
+          onChange={(valueString) => setPrice(valueString)}
+          min={0} 
+          precision={2} 
+          step={0.01}
+        >
+          <NumberInputField bg="white" border="1px solid black" color="black" _focus={{ borderColor: "black" }} />
+          <NumberInputStepper>
+            <NumberIncrementStepper borderColor="black" color="black" />
+            <NumberDecrementStepper borderColor="black" color="black" />
+          </NumberInputStepper>
+        </NumberInput>
+
+        <Button 
+          onClick={handleSubmit}
+          variant="outline"
+          isLoading={uploadProgress > 0 && uploadProgress < 100}
+          loadingText="Uploading..."
+          leftIcon={<FaUpload />}
+          size="lg"
+          borderColor="black"
+          color="black"
+          bg="#ffd598"
+          _hover={{ bg: "#f5f1e8" }}
+        >
+          Publish Dataset
+        </Button>
+
+        {uploadProgress > 0 && (
+          <Progress 
+            value={uploadProgress} 
+            size="sm" 
+            colorScheme="orange" 
+            borderRadius="full"
+            bg="white"
+          />
+        )}
+      </VStack>
+    </Box>
+  </Box>
+</Layout>
   );
 }

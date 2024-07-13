@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router'
 import { useSession } from "next-auth/react";
 import Layout from "../components/layout";
 import { 
@@ -40,10 +41,23 @@ export default function MyDatasetsPage() {
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
+  const router = useRouter()
+
 
   useEffect(() => {
     if (session?.user?.name) {
       fetchDatasets();
+    }
+
+    if (!session || !session.user) { 
+      toast({
+        title: "Error",
+        description: "You need to be signed in to view your overview.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      router.push('/feed');
     }
     
   }, [session?.user.name]);
@@ -84,23 +98,23 @@ export default function MyDatasetsPage() {
     // TODO: Implement the actual end labeling functionality
   };
 
-  if (loading) {
+   if (loading) {
     return (
       <Layout>
         <Flex 
           justify="center" 
           align="center" 
           height="100vh" 
-          bg="gray.900"
-          color="white"
+          bg="#f5f1e8"
+          color="black"
         >
           <VStack spacing={6}>
-            <Icon as={FaDatabase} boxSize={12} color="blue.400" />
-            <Spinner size="xl" color="blue.400" />
+            <Icon as={FaDatabase} boxSize={12} color="#ffd598" />
+            <Spinner size="xl" color="#ffd598" />
             <Text fontSize="2xl" fontWeight="bold">
               Loading Your Datasets
             </Text>
-            <Text fontSize="md" color="gray.400" textAlign="center">
+            <Text fontSize="md" color="gray.600" textAlign="center">
               We're retrieving your uploaded datasets.
               <br />
               This won't take long!
@@ -111,38 +125,37 @@ export default function MyDatasetsPage() {
     );
   }
 
-  return (
-     <Layout>
-      <Box minHeight="100vh" bg="gray.900" color="white" pt="70px" px={4}>
+
+ return (
+    <Layout>
+      <Box minHeight="100vh" bg="#f5f1e8" color="black" pt="70px" px={4}>
         <VStack spacing={8} align="stretch">
           <Heading as="h1" size="xl" textAlign="center">
-            {/* <Icon as={} mr={2} /> */}
             My Datasets
           </Heading>
 
           {datasets.length === 0 ? (
             <Flex justify="center" align="center" height="50vh">
-              <Text fontSize="xl" color="gray.400">
+              <Text fontSize="xl" color="gray.600">
                 You haven't uploaded any datasets yet.
               </Text>
             </Flex>
           ) : (
             <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
               {datasets.map((dataset) => (
-                <Card key={dataset.dataset_id} bg="gray.800" borderRadius="lg">
+                <Card key={dataset.dataset_id} bg="white" borderRadius="lg" boxShadow="md">
                   <CardBody>
                     <Stack spacing={1}>
-                      <img src={`data:image/png;base64, ${dataset.thumbnail}`} alt={`${dataset.name} thumbnail`} />
-                      <Heading size="md" color="blue.400">{dataset.name}</Heading>
-                      <Text color={"red"}>{dataset.description}</Text>
+                      <img src={`data:image/png;base64, ${dataset.thumbnail}`} alt={`${dataset.name} thumbnail`} style={{ borderRadius: '8px' }} />
+                      <Heading size="md" color="#ffd598">{dataset.name}</Heading>
+                      <Text>{dataset.description}</Text>
                       <Flex align="center">
-                        {/* <Icon as={StarIcon} mr={2} /> */}
-                        <Text fontSize="sm" color={"red"}>Label Options: {dataset.label_options.join(', ')}</Text>
+                        <Text fontSize="sm">Label Options: {dataset.label_options.join(', ')}</Text>
                       </Flex>
                       
                       <Flex align="center">
-                        <Icon as={CheckCircleIcon} mr={2} />
-                        <Text color={"red"} fontSize="sm">Confidence: {Math.round(dataset.accuracy * 100)}% </Text>
+                        <Icon as={CheckCircleIcon} mr={2} color="#ffd598" />
+                        <Text fontSize="sm">Confidence: {Math.round(dataset.accuracy * 100)}% </Text>
                       </Flex>
                       <Flex justify="space-between">
                         <Badge colorScheme="green">Labels Received: {dataset.labels_received}</Badge>

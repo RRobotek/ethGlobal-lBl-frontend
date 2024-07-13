@@ -1,5 +1,6 @@
 import { useSession } from "next-auth/react"
 import { useState } from "react"
+import { useRouter } from 'next/router'
 import { Box, Flex, VStack, Heading, Text, Button, useToast, SimpleGrid, useMediaQuery } from "@chakra-ui/react"
 import Layout from "../components/layout"
 
@@ -8,6 +9,7 @@ export default function DashboardPage() {
   const [claimingProfits, setClaimingProfits] = useState(false)
   const toast = useToast()
   const [isMobile] = useMediaQuery("(max-width: 48em)")
+  const router = useRouter()
 
   // Mock data - replace with actual data fetching logic
   const userStats = {
@@ -16,6 +18,17 @@ export default function DashboardPage() {
     completedTasks: 15,
     totalViews: 10000
   }
+
+  if (!session || !session.user) { 
+      toast({
+        title: "Error",
+        description: "You need to be signed in to view your profile.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      router.push('/feed');
+    }
 
   const handleClaimProfits = async () => {
     setClaimingProfits(true)
@@ -40,9 +53,9 @@ export default function DashboardPage() {
     }
   }
 
-  return (
+   return (
     <Layout>
-      <Box p={6} maxW="container.md" mx="auto" mt={isMobile ? "60px" : "80px"} bg="black" color="white">
+      <Box p={6} maxW="container.md" mx="auto" mt={isMobile ? "60px" : "80px"} bg="#f5f1e8" color="black">
         <VStack spacing={8} align="stretch">
           <Heading fontSize={["2xl", "3xl"]} fontWeight="medium">
             Welcome back, {session?.user?.name}
@@ -55,19 +68,19 @@ export default function DashboardPage() {
             <StatBox label="Total Views" value={userStats.totalViews.toLocaleString()} />
           </SimpleGrid>
 
-          <Box borderWidth="1px" borderColor="gray.800" p={6} borderRadius="md">
+          <Box borderWidth="1px" borderColor="black" p={6} borderRadius="md" bg="white">
             <Flex direction="column" align="center" gap={4}>
-              <Text fontSize="lg" fontWeight="medium" color="gray.400">
+              <Text fontSize="lg" fontWeight="medium" color="gray.600">
                 Claimable Profits
               </Text>
-              <Heading fontSize="3xl" fontWeight="bold">
+              <Heading fontSize="3xl" fontWeight="bold" color="#ffd598">
                 ${userStats.availableProfits.toFixed(2)}
               </Heading>
               <Button
                 size="lg"
-                bg="white"
+                bg="#ffd598"
                 color="black"
-                _hover={{ bg: "gray.200" }}
+                _hover={{ bg: "#f5f1e8" }}
                 onClick={handleClaimProfits}
                 isLoading={claimingProfits}
                 loadingText="Claiming..."
@@ -85,11 +98,11 @@ export default function DashboardPage() {
 }
 
 const StatBox = ({ label, value }) => (
-  <Box borderWidth="1px" borderColor="gray.800" p={5} borderRadius="md" textAlign="center">
-    <Text fontSize="sm" fontWeight="medium" color="gray.400" mb={2}>
+  <Box borderWidth="1px" borderColor="black" p={5} borderRadius="md" textAlign="center" bg="white">
+    <Text fontSize="sm" fontWeight="medium" color="gray.600" mb={2}>
       {label}
     </Text>
-    <Text fontSize="2xl" fontWeight="bold">
+    <Text fontSize="2xl" fontWeight="bold" color="#ffd598">
       {value}
     </Text>
   </Box>

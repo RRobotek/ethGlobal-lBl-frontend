@@ -9,9 +9,10 @@ export default function Header() {
   const loading = status === "loading"
   const { isOpen, onOpen, onClose } = useDisclosure()
   
-  const bgColor = "rgba(0, 0, 0, 0.8)"
-  const textColor = "white"
-  const hoverBgColor = "rgba(255, 255, 255, 0.1)"
+  const bgColor = "#f5f1e8"
+  const textColor = "black"
+  const accentColor = "#ffd598"
+  const hoverBgColor = "#ffd598"
 
   const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
 
@@ -60,24 +61,24 @@ export default function Header() {
 
   const NavContent = () => (
     <>
-      <NavItem href="/" icon={<InfoIcon />}>Home</NavItem>
       <NavItem href="/feed" icon={<ViewIcon />}>Feed</NavItem>
-      <NavItem href="/me" icon={<InfoIcon />}>Profile</NavItem>
+      <NavItem href="/profile" icon={<InfoIcon />}>Profile</NavItem>
       <NavItem href="/publish" icon={<AddIcon />}>Publish</NavItem>
       <NavItem href="/overview" icon={<ViewIcon />}>Overview</NavItem>
-
     </>
   )
 
   return (
-    <Box as="header" bg={bgColor} py={2} position="fixed" top={0} left={0} right={0} zIndex={1000} backdropFilter="blur(5px)">
+    <Box as="header" bg={bgColor} py={2} position="fixed" top={0} left={0} right={0} zIndex={1000} boxShadow="0 2px 4px rgba(0,0,0,0.1)">
       <Flex maxW="container.xl" mx="auto" px={4} justifyContent="space-between" alignItems="center">
         <Flex alignItems="center">
           {!session && !loading && (
             <Button
-              colorScheme="blue"
+              bg={accentColor}
+              color={textColor}
               size="sm"
               onClick={() => signIn("worldcoin")}
+              _hover={{ bg: hoverBgColor }}
             >
               Sign in
             </Button>
@@ -120,7 +121,7 @@ export default function Header() {
               >
                 Menu
               </MenuButton>
-              <MenuList bg={bgColor} borderColor="gray.600">
+              <MenuList bg={bgColor} borderColor={textColor}>
                 <NavContent />
               </MenuList>
             </Menu>
@@ -131,7 +132,7 @@ export default function Header() {
         <DrawerOverlay />
         <DrawerContent bg={bgColor} color={textColor}>
           <DrawerCloseButton />
-          <DrawerHeader>Navigation</DrawerHeader>
+          <DrawerHeader borderBottomWidth="1px" borderColor={textColor}>Navigation</DrawerHeader>
           <DrawerBody>
             <VStack spacing={2} align="stretch">
               <NavContent />
