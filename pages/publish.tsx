@@ -20,10 +20,13 @@ import {
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
-  Divider
+  Divider,
+  Textarea
 } from "@chakra-ui/react";
 import { AddIcon, CloseIcon, AttachmentIcon, CheckIcon, WarningIcon } from '@chakra-ui/icons';
 import { FaFolderOpen, FaUpload, FaTags, FaEthereum, FaDatabase, FaImage, FaPlus } from 'react-icons/fa';
+
+const API_BASE_URL = 'http://127.0.0.1:8000';
 
 export default function PublishDatasetPage() {
   const { data: session } = useSession();
@@ -32,8 +35,11 @@ export default function PublishDatasetPage() {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [price, setPrice] = useState<string>('0.00');
+  const [datasetName, setDatasetName] = useState('');
+  const [datasetDescription, setDatasetDescription] = useState('');
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -82,10 +88,10 @@ export default function PublishDatasetPage() {
       return;
     }
 
-    if (files.length === 0) {
+    if (files.length === 0 || !datasetName || !datasetDescription) {
       toast({
         title: "Error",
-        description: "Please select at least one file for your dataset.",
+        description: "Please fill in all required fields and select at least one file for your dataset.",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -106,30 +112,77 @@ export default function PublishDatasetPage() {
       return;
     }
 
-    // Simulating upload progress
-    for (let i = 0; i <= 100; i += 10) {
-      setUploadProgress(i);
-      await new Promise(resolve => setTimeout(resolve, 200));
+      try {
+        const bodypay = JSON.stringify({
+          label_options: labelOptions,
+          owner_id: session?.user?.name,
+          name: datasetName,
+          description: datasetDescription
+        })
+      // Step 1: Add dataset
+      const datasetResponse = await fetch(`${API_BASE_URL}/logic/add_dataset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: bodypay,
+      });
+
+      if (!datasetResponse.ok) {
+        throw new Error('Failed to create dataset');
+      }
+
+      const datasetData = await datasetResponse.json();
+      const datasetId = datasetData.id;
+
+      // Step 2: Upload data
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const uploadResponse = await fetch(`${API_BASE_URL}/logic/upload_data?dataset_id=${datasetId}`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error(`Failed to upload file ${i + 1}`);
+        }
+
+        // Update progress
+        setUploadProgress(((i + 1) / files.length) * 100);
+      }
+
+      toast({
+        title: "Success",
+        description: "Your dataset has been published.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+        icon: <CheckIcon />
+      });
+
+      // Reset form
+      setFiles([]);
+      setPreviewUrls([]);
+      setLabelOptions(['', '']);
+      setUploadProgress(0);
+      setPrice('0.00');
+      setDatasetName('');
+      setDatasetDescription('');
+
+    } catch (error) {
+      console.error('Error publishing dataset:', error);
+      toast({
+        title: "Error",
+        description: "Failed to publish dataset. Please try again.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+        icon: <WarningIcon />
+      });
     }
-
-    console.log('Files to upload:', files);
-    console.log('Label options:', labelOptions);
-    console.log('Price:', price);
-
-    toast({
-      title: "Success",
-      description: "Your dataset has been published.",
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-      icon: <CheckIcon />
-    });
-
-    setFiles([]);
-    setPreviewUrls([]);
-    setLabelOptions(['', '']);
-    setUploadProgress(0);
-    setPrice('0.00');
   };
 
   return (
@@ -141,6 +194,26 @@ export default function PublishDatasetPage() {
               <FaDatabase /> Publish Dataset
             </Heading>
             
+            <Input
+              placeholder="Dataset Name"
+              value={datasetName}
+              onChange={(e) => setDatasetName(e.target.value)}
+              variant="filled"
+              bg="gray.800"
+              _hover={{ bg: "gray.700" }}
+              _focus={{ bg: "gray.700", borderColor: "gray.600" }}
+            />
+
+            <Textarea
+              placeholder="Dataset Description"
+              value={datasetDescription}
+              onChange={(e) => setDatasetDescription(e.target.value)}
+              variant="filled"
+              bg="gray.800"
+              _hover={{ bg: "gray.700" }}
+              _focus={{ bg: "gray.700", borderColor: "gray.600" }}
+            />
+
             <Box>
               <input
                 type="file"

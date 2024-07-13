@@ -18,7 +18,7 @@ export default function FeedPage() {
     console.log("Fetching posts...");
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:8000/logic/get_feed/${BUFFER_SIZE}/`);
+      const response = await fetch(`http://127.0.0.1:8000/logic/get_feed/${BUFFER_SIZE}/`);
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
@@ -98,7 +98,7 @@ export default function FeedPage() {
 
     try {
       console.log('Submitting label:', labelData);
-      const response = await fetch('http://localhost:8000/logic/label', {
+      const response = await fetch('http://127.0.0.1:8000/logic/label', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
