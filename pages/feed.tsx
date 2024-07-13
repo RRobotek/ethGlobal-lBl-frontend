@@ -14,12 +14,14 @@ export default function FeedPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState(0);
   const toast = useToast();
+  const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
+
 
   const fetchPosts = useCallback(async () => {
     console.log("Fetching posts...");
     setIsLoading(true);
     try {
-      const response = await fetch(`http://127.0.0.1:8000/logic/get_feed/${BUFFER_SIZE}/`);
+      const response = await fetch(`${API_BASE_URL}/logic/get_feed/${BUFFER_SIZE}`);
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
@@ -99,7 +101,7 @@ export default function FeedPage() {
 
     try {
       console.log('Submitting label:', labelData);
-      const response = await fetch('http://127.0.0.1:8000/logic/label', {
+      const response = await fetch(`${API_BASE_URL}/logic/label`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

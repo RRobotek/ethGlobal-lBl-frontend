@@ -22,7 +22,7 @@ import { FaDatabase, FaTag, FaUserAlt, FaCalendarAlt, FaStopCircle } from "react
 
 import { ViewIcon, CheckCircleIcon, WarningIcon } from '@chakra-ui/icons';
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
 
 interface Dataset {
   id: string;
@@ -142,7 +142,7 @@ export default function MyDatasetsPage() {
                       
                       <Flex align="center">
                         <Icon as={CheckCircleIcon} mr={2} />
-                        <Text color={"red"} fontSize="sm">Confidence: {Math.round(dataset.accuracy.confidence * 100)}% for { dataset.accuracy.label}</Text>
+                        <Text color={"red"} fontSize="sm">Confidence: {Math.round(dataset.accuracy * 100)}% </Text>
                       </Flex>
                       <Flex justify="space-between">
                         <Badge colorScheme="green">Labels Received: {dataset.labels_received}</Badge>

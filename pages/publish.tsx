@@ -26,7 +26,7 @@ import {
 import { AddIcon, CloseIcon, AttachmentIcon, CheckIcon, WarningIcon } from '@chakra-ui/icons';
 import { FaFolderOpen, FaUpload, FaTags, FaEthereum, FaDatabase, FaImage, FaPlus } from 'react-icons/fa';
 
-const API_BASE_URL = 'http://127.0.0.1:8000';
+const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
 
 export default function PublishDatasetPage() {
   const { data: session } = useSession();
