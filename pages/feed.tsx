@@ -2,7 +2,8 @@ import { useSession } from "next-auth/react";
 import Layout from "../components/layout";
 import { useState, useCallback, useEffect } from "react";
 import { useSwipeable } from "react-swipeable";
-import { Box, Button, VStack, Text, Flex, useToast } from "@chakra-ui/react";
+import { Box, Button, VStack, Text, Flex, useToast, Spinner, Icon } from "@chakra-ui/react";
+import { FaTag } from "react-icons/fa";
 
 const BUFFER_SIZE = 5;
 
@@ -72,7 +73,7 @@ export default function FeedPage() {
 
   useEffect(() => {
     if (currentIndex >= posts.length - 5 && !isLoading) {
-      console.log("Buffer low, fetching more posts");
+      console.log("Buffer low, fetching more posts");   
       fetchPosts();
     }
   }, [currentIndex, posts.length, isLoading, fetchPosts]);
@@ -144,7 +145,7 @@ export default function FeedPage() {
         left={0}
         right={0}
         bottom={0}
-        backgroundImage={`url(${post.url})`}
+        backgroundImage={`data:image/png;base64,${post.url}`}
         backgroundSize="cover"
         backgroundPosition="center"
         filter="blur(20px)"
@@ -159,7 +160,7 @@ export default function FeedPage() {
         position="relative"
       >
         <img 
-          src={post.url} 
+          src={`data:image/png;base64,${post.url}`}
           alt={`Feed item ${index}`} 
           style={{
             maxWidth: '100%',
@@ -203,11 +204,29 @@ export default function FeedPage() {
             {posts.map((post, index) => renderPost(post, index))}
           </>
         ) : (
-          <Flex justify="center" align="center" height="100%">
-            <Text>No posts available</Text>
+          <Flex 
+            justify="center" 
+            align="center" 
+            height="100%" 
+            bg="gray.900"
+            color="white"
+          >
+            <VStack spacing={6}>
+              <Icon as={FaTag} boxSize={12} color="blue.400" />
+              <Spinner size="xl" color="blue.400" />
+              <Text fontSize="2xl" fontWeight="bold">
+                Loading Feed
+              </Text>
+              <Text fontSize="md" color="gray.400" textAlign="center">
+                We're gathering the latest posts for you.
+                <br />
+                This won't take long!
+              </Text>
+            </VStack>
           </Flex>
         )}
       </Box>
     </Layout>
+
   );
 }

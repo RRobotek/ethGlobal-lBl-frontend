@@ -13,12 +13,34 @@ export default function Header() {
   const textColor = "white"
   const hoverBgColor = "rgba(255, 255, 255, 0.1)"
 
-  useEffect(() => {
-    if (session?.accessToken) {
-      // You can use the accessToken to make authenticated requests to your FastAPI backend
-      console.log("Access token:", session.accessToken)
-    }
-  }, [session])
+  const API_BASE_URL = 'http://127.0.0.1:8000';
+
+
+    useEffect(() => {
+  if (session?.user?.name) {
+    // You can use the accessToken to make authenticated requests to your FastAPI backend
+    console.log("Access token:", session?.user?.name)
+    
+    // Fetch to check if the user is in the database
+    fetch(`${API_BASE_URL}/logic/checkUser/${session?.user?.name}`, {
+      method: 'GET',
+
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to check user');
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log("User check result:", data);
+      // You can handle the response here, e.g., set some state or show a notification
+    })
+    .catch(error => {
+      console.error('Error checking user:', error);
+    });
+  }
+}, [session])
 
   const NavItem = ({ href, icon, children }) => (
     <Button 
@@ -41,6 +63,8 @@ export default function Header() {
       <NavItem href="/feed" icon={<ViewIcon />}>Feed</NavItem>
       <NavItem href="/me" icon={<InfoIcon />}>Profile</NavItem>
       <NavItem href="/publish" icon={<AddIcon />}>Publish</NavItem>
+      <NavItem href="/overview" icon={<ViewIcon />}>Overview</NavItem>
+
     </>
   )
 

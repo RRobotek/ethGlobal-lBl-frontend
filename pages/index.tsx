@@ -1,14 +1,17 @@
+import { useEffect } from 'react'
+import { useRouter } from 'next/router'
 import Layout from "../components/layout"
 
 export default function IndexPage() {
+  const router = useRouter()
+
+  useEffect(() => {
+    router.push('/feed')
+  }, [router])
+
   return (
     <Layout>
-      <h1>NextAuth.js Example</h1>
-      <p>
-        This is an example site to demonstrate how to use{" "}
-        <a href="https://next-auth.js.org">NextAuth.js</a> with {" "}
-        <a href ="https://worldcoin.org/world-id">World ID</a> for authentication.
-      </p>
+      <h1>Redirecting to Feed...</h1>
     </Layout>
   )
 }

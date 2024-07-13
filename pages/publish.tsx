@@ -132,8 +132,9 @@ export default function PublishDatasetPage() {
         throw new Error('Failed to create dataset');
       }
 
-      const datasetData = await datasetResponse.json();
-      const datasetId = datasetData.id;
+          const datasetData = await datasetResponse.json();
+          console.log(datasetData)
+      const datasetId = datasetData.dataset_id;
 
       // Step 2: Upload data
       for (let i = 0; i < files.length; i++) {
