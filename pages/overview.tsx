@@ -20,6 +20,8 @@ import {
 } from "@chakra-ui/react";
 import { FaDatabase, FaTag, FaUserAlt, FaCalendarAlt, FaStopCircle } from "react-icons/fa";
 
+import { ViewIcon, CheckCircleIcon, WarningIcon } from '@chakra-ui/icons';
+
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
 interface Dataset {
@@ -40,10 +42,11 @@ export default function MyDatasetsPage() {
   const toast = useToast();
 
   useEffect(() => {
-   
+    if (session?.user?.name) {
       fetchDatasets();
+    }
     
-  }, [session]);
+  }, [session?.user.name]);
 
     const fetchDatasets = async () => {
       console.log("fetch datasets")
@@ -109,11 +112,11 @@ export default function MyDatasetsPage() {
   }
 
   return (
-    <Layout>
+     <Layout>
       <Box minHeight="100vh" bg="gray.900" color="white" pt="70px" px={4}>
         <VStack spacing={8} align="stretch">
           <Heading as="h1" size="xl" textAlign="center">
-            <Icon as={FaDatabase} mr={2} />
+            {/* <Icon as={} mr={2} /> */}
             My Datasets
           </Heading>
 
@@ -128,24 +131,21 @@ export default function MyDatasetsPage() {
               {datasets.map((dataset) => (
                 <Card key={dataset.dataset_id} bg="gray.800" borderRadius="lg">
                   <CardBody>
-                    <Stack spacing={3}>
+                    <Stack spacing={1}>
+                      <img src={`data:image/png;base64, ${dataset.thumbnail}`} alt={`${dataset.name} thumbnail`} />
                       <Heading size="md" color="blue.400">{dataset.name}</Heading>
-                      <Text>{dataset.description}</Text>
+                      <Text color={"red"}>{dataset.description}</Text>
                       <Flex align="center">
-                        <Icon as={FaUserAlt} mr={2} />
-                        <Text fontSize="sm">Owner ID: {dataset.owner_id}</Text>
+                        {/* <Icon as={StarIcon} mr={2} /> */}
+                        <Text fontSize="sm" color={"red"}>Label Options: {dataset.label_options.join(', ')}</Text>
                       </Flex>
+                      
                       <Flex align="center">
-                        <Icon as={FaCalendarAlt} mr={2} />
-                        <Text fontSize="sm">Created: {new Date(dataset.created_at).toLocaleDateString()}</Text>
-                      </Flex>
-                      <Flex align="center">
-                        <Icon as={FaTag} mr={2} />
-                        <Text fontSize="sm">Label Options: {dataset.label_options.join(', ')}</Text>
+                        <Icon as={CheckCircleIcon} mr={2} />
+                        <Text color={"red"} fontSize="sm">Confidence: {Math.round(dataset.accuracy.confidence * 100)}% for { dataset.accuracy.label}</Text>
                       </Flex>
                       <Flex justify="space-between">
-                        <Badge colorScheme="green">Total: {dataset.data_count}</Badge>
-                        <Badge colorScheme="purple">Labeled: {dataset.labeled_count}</Badge>
+                        <Badge colorScheme="green">Labels Received: {dataset.labels_received}</Badge>
                       </Flex>
                     </Stack>
                   </CardBody>
