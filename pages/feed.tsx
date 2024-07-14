@@ -188,26 +188,29 @@ export default function FeedPage() {
         bg="rgba(245, 241, 232, 0.8)"
       >
         <Flex wrap="wrap" justify="center">
-          {post.label_options.map((label, labelIndex) => (
-            <Button
-              key={labelIndex}
-              onClick={() => handleLabelClick(label)}
-              m={1}
-              size="lg"
-              variant="outline"
-              color="black"
-              borderColor="black"
-              bg="#ffd598"
-              _hover={{ bg: "#f5f1e8" }}
-            >
-              {label}
-            </Button>
-          ))}
+          {post.label_options && post.label_options.length > 0 ? (
+            post.label_options.map((label, labelIndex) => (
+              <Button
+                key={labelIndex}
+                onClick={() => handleLabelClick(label)}
+                m={1}
+                size="lg"
+                variant="outline"
+                color="black"
+                borderColor="black"
+                bg="#ffd598"
+                _hover={{ bg: "#f5f1e8" }}
+              >
+                {label}
+              </Button>
+            ))
+          ) : (
+            <Text>No labels available</Text>
+          )}
         </Flex>
       </Box>
     </Box>
   );
-
   return (
     <Layout>
       <Box height="100vh" overflow="hidden" position="relative" {...handlers} bg="#f5f1e8">
