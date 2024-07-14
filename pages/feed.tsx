@@ -1,22 +1,20 @@
-import { useSession } from "next-auth/react";
-import Layout from "../components/layout";
 import { useState, useCallback, useEffect } from "react";
 import { useSwipeable } from "react-swipeable";
 import { Box, Button, VStack, Text, Flex, useToast, Spinner, Icon } from "@chakra-ui/react";
 import { FaTag } from "react-icons/fa";
-
+import Layout from "../components/layout";
+import { useWeb3AuthContext } from '../contexts/Web3AuthContext';
 
 const BUFFER_SIZE = 5;
+const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
 
 export default function FeedPage() {
-  const { data: session } = useSession();
+  const { web3, address, isConnected } = useWeb3AuthContext();
   const [posts, setPosts] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState(0);
   const toast = useToast();
-  const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
-
 
   const fetchPosts = useCallback(async () => {
     console.log("Fetching posts...");
@@ -82,10 +80,10 @@ export default function FeedPage() {
   }, [currentIndex, posts.length, isLoading, fetchPosts]);
 
   const handleLabelClick = async (label) => {
-    if (!session || !session.user) {
+    if (!isConnected) {
       toast({
         title: "Error",
-        description: "You must be logged in to label posts.",
+        description: "You must be connected to label posts.",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -97,7 +95,7 @@ export default function FeedPage() {
     const labelData = {
       data_id: currentPost.data_id,
       label: label,
-      user_id: session.user.name
+      user_id: address // Use the wallet address as the user ID
     };
 
     try {

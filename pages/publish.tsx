@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
-import { useSession } from "next-auth/react";
 import Layout from "../components/layout";
+import { useWeb3AuthContext } from "../contexts/Web3AuthContext";
 import { 
   Box, 
   Button, 
@@ -29,7 +29,7 @@ import { FaFolderOpen, FaUpload, FaTags, FaEthereum, FaDatabase, FaImage, FaPlus
 const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
 
 export default function PublishDatasetPage() {
-  const { data: session } = useSession();
+  const { web3, address, isConnected, isWeb3AuthReady } = useWeb3AuthContext();
   const [files, setFiles] = useState<File[]>([]);
   const [labelOptions, setLabelOptions] = useState<string[]>(['', '']);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -39,7 +39,6 @@ export default function PublishDatasetPage() {
   const [datasetDescription, setDatasetDescription] = useState('');
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -76,10 +75,10 @@ export default function PublishDatasetPage() {
   };
 
   const handleSubmit = async () => {
-    if (!session || !session.user) {
+    if (!isConnected || !address) {
       toast({
         title: "Error",
-        description: "You must be logged in to publish datasets.",
+        description: "You must be connected to publish datasets.",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -112,13 +111,14 @@ export default function PublishDatasetPage() {
       return;
     }
 
-      try {
-        const bodypay = JSON.stringify({
-          label_options: labelOptions,
-          owner_id: session?.user?.name,
-          name: datasetName,
-          description: datasetDescription
-        })
+    try {
+      const bodypay = JSON.stringify({
+        label_options: labelOptions,
+        owner_id: address,
+        name: datasetName,
+        description: datasetDescription
+      });
+
       // Step 1: Add dataset
       const datasetResponse = await fetch(`${API_BASE_URL}/logic/add_dataset`, {
         method: 'POST',
@@ -132,8 +132,8 @@ export default function PublishDatasetPage() {
         throw new Error('Failed to create dataset');
       }
 
-          const datasetData = await datasetResponse.json();
-          console.log(datasetData)
+      const datasetData = await datasetResponse.json();
+      console.log(datasetData);
       const datasetId = datasetData.dataset_id;
 
       // Step 2: Upload data
@@ -185,6 +185,16 @@ export default function PublishDatasetPage() {
       });
     }
   };
+
+  if (!isWeb3AuthReady || !isConnected) {
+    return (
+      <Layout>
+        <Box minHeight="100vh" bg="#f5f1e8" color="black" pt="70px">
+          <Text>Please connect your wallet to publish datasets.</Text>
+        </Box>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -256,131 +266,131 @@ export default function PublishDatasetPage() {
               </Flex>
             </Box>
 
-           {files.length > 0 && (
-          <Flex align="center" justify="center">
-            <Text fontSize="sm" color="black">
-              <FaImage /> {files.length} file{files.length > 1 ? 's' : ''} selected
-            </Text>
-          </Flex>
-        )}
+            {files.length > 0 && (
+              <Flex align="center" justify="center">
+                <Text fontSize="sm" color="black">
+                  <FaImage /> {files.length} file{files.length > 1 ? 's' : ''} selected
+                </Text>
+              </Flex>
+            )}
 
-        {previewUrls.length > 0 && (
-          <AspectRatio ratio={16/9} width="100%" maxHeight="60vh">
-            <Box 
-              borderRadius="md"
-              overflow="hidden"
-              border="1px solid"
-              borderColor="black"
-            >
-              {previewUrls.map((url, index) => (
-                <Image 
-                  key={index}
-                  src={url}
-                  alt={`Preview ${index}`}
-                  objectFit="cover"
-                  width="100%"
-                  height="100%"
-                  position="absolute"
-                  top={0}
-                  left={0}
-                  opacity={index === 0 ? 1 : 0}
-                  transition="opacity 0.3s ease-in-out"
-                />
+            {previewUrls.length > 0 && (
+              <AspectRatio ratio={16/9} width="100%" maxHeight="60vh">
+                <Box 
+                  borderRadius="md"
+                  overflow="hidden"
+                  border="1px solid"
+                  borderColor="black"
+                >
+                  {previewUrls.map((url, index) => (
+                    <Image 
+                      key={index}
+                      src={url}
+                      alt={`Preview ${index}`}
+                      objectFit="cover"
+                      width="100%"
+                      height="100%"
+                      position="absolute"
+                      top={0}
+                      left={0}
+                      opacity={index === 0 ? 1 : 0}
+                      transition="opacity 0.3s ease-in-out"
+                    />
+                  ))}
+                </Box>
+              </AspectRatio>
+            )}
+
+            <VStack spacing={4}>
+              <Flex align="center" width="full">
+                <FaTags color="black" />
+                <Text ml={2} fontWeight="bold" color="black">Label Options</Text>
+              </Flex>
+              {labelOptions.map((option, index) => (
+                <Flex key={index} width="full">
+                  <Input
+                    placeholder={`Label option ${index + 1}`}
+                    value={option}
+                    onChange={(e) => handleLabelOptionChange(index, e.target.value)}
+                    mr={2}
+                    variant="filled"
+                    bg="white"
+                    color="black"
+                    _hover={{ bg: "#ffd598" }}
+                    _focus={{ bg: "#ffd598", borderColor: "black" }}
+                  />
+                  {index >= 2 && (
+                    <IconButton
+                      aria-label="Remove label option"
+                      icon={<CloseIcon />}
+                      onClick={() => removeLabelOption(index)}
+                      size="sm"
+                      variant="ghost"
+                      color="black"
+                      _hover={{ bg: "#ffd598" }}
+                    />
+                  )}
+                </Flex>
               ))}
-            </Box>
-          </AspectRatio>
-        )}
-
-        <VStack spacing={4}>
-          <Flex align="center" width="full">
-            <FaTags color="black" />
-            <Text ml={2} fontWeight="bold" color="black">Label Options</Text>
-          </Flex>
-          {labelOptions.map((option, index) => (
-            <Flex key={index} width="full">
-              <Input
-                placeholder={`Label option ${index + 1}`}
-                value={option}
-                onChange={(e) => handleLabelOptionChange(index, e.target.value)}
-                mr={2}
-                variant="filled"
-                bg="white"
+              <Button 
+                leftIcon={<FaPlus />} 
+                onClick={addLabelOption} 
+                size="sm"
+                variant="ghost"
                 color="black"
                 _hover={{ bg: "#ffd598" }}
-                _focus={{ bg: "#ffd598", borderColor: "black" }}
-              />
-              {index >= 2 && (
-                <IconButton
-                  aria-label="Remove label option"
-                  icon={<CloseIcon />}
-                  onClick={() => removeLabelOption(index)}
-                  size="sm"
-                  variant="ghost"
-                  color="black"
-                  _hover={{ bg: "#ffd598" }}
-                />
-              )}
+              >
+                Add Label Option
+              </Button>
+            </VStack>
+
+            <Divider borderColor="black" />
+
+            <Flex align="center" width="full">
+              <FaEthereum color="black" />
+              <Text ml={2} fontWeight="bold" color="black">Set Price (ETH)</Text>
             </Flex>
-          ))}
-          <Button 
-            leftIcon={<FaPlus />} 
-            onClick={addLabelOption} 
-            size="sm"
-            variant="ghost"
-            color="black"
-            _hover={{ bg: "#ffd598" }}
-          >
-            Add Label Option
-          </Button>
-        </VStack>
+            <NumberInput 
+              value={price} 
+              onChange={(valueString) => setPrice(valueString)}
+              min={0} 
+              precision={2} 
+              step={0.01}
+            >
+              <NumberInputField bg="white" border="1px solid black" color="black" _focus={{ borderColor: "black" }} />
+              <NumberInputStepper>
+                <NumberIncrementStepper borderColor="black" color="black" />
+                <NumberDecrementStepper borderColor="black" color="black" />
+              </NumberInputStepper>
+            </NumberInput>
 
-        <Divider borderColor="black" />
+            <Button 
+              onClick={handleSubmit}
+              variant="outline"
+              isLoading={uploadProgress > 0 && uploadProgress < 100}
+              loadingText="Uploading..."
+              leftIcon={<FaUpload />}
+              size="lg"
+              borderColor="black"
+              color="black"
+              bg="#ffd598"
+              _hover={{ bg: "#f5f1e8" }}
+            >
+              Publish Dataset
+            </Button>
 
-        <Flex align="center" width="full">
-          <FaEthereum color="black" />
-          <Text ml={2} fontWeight="bold" color="black">Set Price (ETH)</Text>
-        </Flex>
-        <NumberInput 
-          value={price} 
-          onChange={(valueString) => setPrice(valueString)}
-          min={0} 
-          precision={2} 
-          step={0.01}
-        >
-          <NumberInputField bg="white" border="1px solid black" color="black" _focus={{ borderColor: "black" }} />
-          <NumberInputStepper>
-            <NumberIncrementStepper borderColor="black" color="black" />
-            <NumberDecrementStepper borderColor="black" color="black" />
-          </NumberInputStepper>
-        </NumberInput>
-
-        <Button 
-          onClick={handleSubmit}
-          variant="outline"
-          isLoading={uploadProgress > 0 && uploadProgress < 100}
-          loadingText="Uploading..."
-          leftIcon={<FaUpload />}
-          size="lg"
-          borderColor="black"
-          color="black"
-          bg="#ffd598"
-          _hover={{ bg: "#f5f1e8" }}
-        >
-          Publish Dataset
-        </Button>
-
-        {uploadProgress > 0 && (
-          <Progress 
-            value={uploadProgress} 
-            size="sm" 
-            colorScheme="orange" 
-            borderRadius="full"
-            bg="white"
-          />
-        )}
-      </VStack>
-    </Box>
-  </Box>
-</Layout>
+            {uploadProgress > 0 && (
+              <Progress 
+                value={uploadProgress} 
+                size="sm" 
+                colorScheme="orange" 
+                borderRadius="full"
+                bg="white"
+              />
+            )}
+          </VStack>
+        </Box>
+      </Box>
+    </Layout>
   );
 }

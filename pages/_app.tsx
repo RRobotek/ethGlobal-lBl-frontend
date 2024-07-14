@@ -3,6 +3,8 @@ import { ChakraProvider } from '@chakra-ui/react'
 import type { AppProps } from "next/app"
 import type { Session } from "next-auth"
 
+import { Web3AuthProvider } from "../contexts/Web3AuthContext"
+
 // You can import a custom theme here if you have one
 // import theme from '../path/to/your/theme'
 
@@ -11,10 +13,10 @@ export default function App({
   pageProps: { session, ...pageProps },
 }: AppProps<{ session: Session }>) {
   return (
-    <ChakraProvider>
-      <SessionProvider session={session}>
-        <Component {...pageProps} />
-      </SessionProvider>
-    </ChakraProvider>
+    <Web3AuthProvider>
+      <ChakraProvider>
+          <Component {...pageProps} />
+      </ChakraProvider>
+    </Web3AuthProvider>
   )
 }

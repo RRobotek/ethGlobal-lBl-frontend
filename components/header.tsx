@@ -1,48 +1,25 @@
-import Link from "next/link"
-import { signIn, signOut, useSession } from "next-auth/react"
-import { Box, Flex, Button, Avatar, Menu, MenuButton, MenuList, MenuItem, IconButton, useDisclosure, Drawer, DrawerBody, DrawerHeader, DrawerOverlay, DrawerContent, DrawerCloseButton, VStack } from "@chakra-ui/react"
-import { HamburgerIcon, AddIcon, ViewIcon, InfoIcon } from '@chakra-ui/icons'
-import { useEffect } from 'react'
+'use client';
+import { useEffect } from "react";
+import Link from "next/link";
+import { Box, Flex, Button, Avatar, Menu, MenuButton, MenuList, MenuItem, IconButton, useDisclosure, Drawer, DrawerBody, DrawerHeader, DrawerOverlay, DrawerContent, DrawerCloseButton, VStack, Text } from "@chakra-ui/react";
+import { HamburgerIcon, AddIcon, ViewIcon, InfoIcon } from '@chakra-ui/icons';
+
+import { useWeb3AuthContext } from "../contexts/Web3AuthContext";
+
+const bgColor = "#f5f1e8";
+const textColor = "black";
+const accentColor = "#ffd598";
+const hoverBgColor = "#ffd598";
 
 export default function Header() {
-  const { data: session, status } = useSession()
-  const loading = status === "loading"
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  
-  const bgColor = "#f5f1e8"
-  const textColor = "black"
-  const accentColor = "#ffd598"
-  const hoverBgColor = "#ffd598"
+  const { web3, address, isConnected, login, logout, isWeb3AuthReady } = useWeb3AuthContext();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
-
-
-    useEffect(() => {
-  if (session?.user?.name) {
-    // You can use the accessToken to make authenticated requests to your FastAPI backend
-    console.log("Access token:", session?.user?.name)
-    console.log(API_BASE_URL)
-    
-    // Fetch to check if the user is in the database
-    fetch(`${API_BASE_URL}/logic/checkUser/${session?.user?.name}`, {
-      method: 'GET',
-
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Failed to check user');
-      }
-      return response.json();
-    })
-    .then(data => {
-      console.log("User check result:", data);
-      // You can handle the response here, e.g., set some state or show a notification
-    })
-    .catch(error => {
-      console.error('Error checking user:', error);
-    });
-  }
-}, [session])
+  useEffect(() => {
+    console.log("Web3Auth ready:", isWeb3AuthReady);
+    console.log("Connected:", isConnected);
+    console.log("Address:", address);
+  }, [isWeb3AuthReady, isConnected, address]);
 
   const NavItem = ({ href, icon, children }) => (
     <Button 
@@ -57,7 +34,7 @@ export default function Header() {
     >
       {children}
     </Button>
-  )
+  );
 
   const NavContent = () => (
     <>
@@ -66,35 +43,42 @@ export default function Header() {
       <NavItem href="/publish" icon={<AddIcon />}>Publish</NavItem>
       <NavItem href="/overview" icon={<ViewIcon />}>Overview</NavItem>
     </>
-  )
+  );
 
   return (
     <Box as="header" bg={bgColor} py={2} position="fixed" top={0} left={0} right={0} zIndex={1000} boxShadow="0 2px 4px rgba(0,0,0,0.1)">
       <Flex maxW="container.xl" mx="auto" px={4} justifyContent="space-between" alignItems="center">
+        <div>
+          {isConnected && address ? 
+            `Address: ${address.slice(0, 6)}...${address.slice(-4)}` : 
+            "Not connected"
+          }
+        </div>
         <Flex alignItems="center">
-          {!session && !loading && (
+          {!isWeb3AuthReady ? (
+            <Text>Initializing...</Text>
+          ) : !isConnected ? (
             <Button
               bg={accentColor}
               color={textColor}
               size="sm"
-              onClick={() => signIn("worldcoin")}
+              onClick={login}
               _hover={{ bg: hoverBgColor }}
             >
-              Sign in
+              Connect Wallet
             </Button>
-          )}
-          {session?.user && (
+          ) : (
             <Flex alignItems="center">
-              <Avatar size="sm" name={session.user.name} src={session.user.image} />
+              <Avatar size="sm" name={address} />
               <Button 
                 ml={2} 
                 size="sm" 
                 variant="ghost" 
-                onClick={() => signOut()} 
+                onClick={logout} 
                 color={textColor}
                 _hover={{ bg: hoverBgColor }}
               >
-                Sign out
+                Disconnect
               </Button>
             </Flex>
           )}
@@ -141,5 +125,5 @@ export default function Header() {
         </DrawerContent>
       </Drawer>
     </Box>
-  )
+  );
 }

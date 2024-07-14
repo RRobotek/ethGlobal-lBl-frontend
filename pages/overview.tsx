@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router'
-import { useSession } from "next-auth/react";
 import Layout from "../components/layout";
+import { useWeb3AuthContext } from "../contexts/Web3AuthContext";
 import { 
   Box, 
   Flex, 
@@ -20,13 +20,12 @@ import {
   useToast
 } from "@chakra-ui/react";
 import { FaDatabase, FaTag, FaUserAlt, FaCalendarAlt, FaStopCircle } from "react-icons/fa";
-
 import { ViewIcon, CheckCircleIcon, WarningIcon } from '@chakra-ui/icons';
 
 const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
 
 interface Dataset {
-  id: string;
+  dataset_id: string;
   name: string;
   description: string;
   owner_id: string;
@@ -34,38 +33,37 @@ interface Dataset {
   label_options: string[];
   data_count: number;
   labeled_count: number;
+  thumbnail: string;
+  accuracy: number;
+  labels_received: number;
 }
 
 export default function MyDatasetsPage() {
-  const { data: session } = useSession();
+  const { web3, address, isConnected, isWeb3AuthReady } = useWeb3AuthContext();
   const [datasets, setDatasets] = useState<Dataset[]>([]);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
   const router = useRouter()
 
-
   useEffect(() => {
-    if (session?.user?.name) {
+    if (isWeb3AuthReady && isConnected && address) {
       fetchDatasets();
-    }
-
-    if (!session || !session.user) { 
+    } else if (isWeb3AuthReady && !isConnected) {
       toast({
         title: "Error",
-        description: "You need to be signed in to view your overview.",
+        description: "You need to be connected to view your overview.",
         status: "error",
         duration: 5000,
         isClosable: true,
       });
       router.push('/feed');
     }
-    
-  }, [session?.user.name]);
+  }, [isWeb3AuthReady, isConnected, address]);
 
-    const fetchDatasets = async () => {
-      console.log("fetch datasets")
+  const fetchDatasets = async () => {
+    console.log("fetch datasets")
     try {
-      const response = await fetch(`${API_BASE_URL}/logic/get_datasets_for_user/${session?.user?.name}`, {
+      const response = await fetch(`${API_BASE_URL}/logic/get_datasets_for_user/${address}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +96,23 @@ export default function MyDatasetsPage() {
     // TODO: Implement the actual end labeling functionality
   };
 
-   if (loading) {
+  if (!isWeb3AuthReady || !isConnected) {
+    return (
+      <Layout>
+        <Flex 
+          justify="center" 
+          align="center" 
+          height="100vh" 
+          bg="#f5f1e8"
+          color="black"
+        >
+          <Text fontSize="xl">Please connect your wallet to view your datasets.</Text>
+        </Flex>
+      </Layout>
+    );
+  }
+
+  if (loading) {
     return (
       <Layout>
         <Flex 
@@ -125,8 +139,7 @@ export default function MyDatasetsPage() {
     );
   }
 
-
- return (
+  return (
     <Layout>
       <Box minHeight="100vh" bg="#f5f1e8" color="black" pt="70px" px={4}>
         <VStack spacing={8} align="stretch">

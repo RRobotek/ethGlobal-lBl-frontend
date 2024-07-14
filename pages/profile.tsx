@@ -1,45 +1,78 @@
-import { useSession } from "next-auth/react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from 'next/router'
 import { Box, Flex, VStack, Heading, Text, Button, useToast, SimpleGrid, useMediaQuery } from "@chakra-ui/react"
 import Layout from "../components/layout"
+import { useWeb3AuthContext } from "../contexts/Web3AuthContext"
+import Web3 from "web3"
 
 export default function DashboardPage() {
-  const { data: session } = useSession()
+  const { web3, address, isConnected, isWeb3AuthReady } = useWeb3AuthContext()
   const [claimingProfits, setClaimingProfits] = useState(false)
+  const [userStats, setUserStats] = useState({
+    totalEarnings: 0,
+    availableProfits: 0,
+    completedTasks: 0,
+    totalViews: 0,
+    balance: '0'
+  })
   const toast = useToast()
   const [isMobile] = useMediaQuery("(max-width: 48em)")
   const router = useRouter()
 
-  // Mock data - replace with actual data fetching logic
-  const userStats = {
-    totalEarnings: 1000,
-    availableProfits: 250,
-    completedTasks: 15,
-    totalViews: 10000
-  }
-
-  if (!session || !session.user) { 
+  useEffect(() => {
+    if (isWeb3AuthReady && !isConnected) {
       toast({
         title: "Error",
-        description: "You need to be signed in to view your profile.",
+        description: "You need to connect your wallet to view your profile.",
         status: "error",
         duration: 5000,
         isClosable: true,
       });
       router.push('/feed');
+    } else if (isConnected && web3) {
+      fetchUserStats();
     }
+  }, [isWeb3AuthReady, isConnected, web3, router, toast]);
+
+  const fetchUserStats = async () => {
+    try {
+      // Fetch balance
+      const balance = await web3.eth.getBalance(address);
+      const balanceInEth = Web3.utils.fromWei(balance, 'ether');
+
+      // For now, we'll still use mock data for other stats
+      setUserStats({
+        totalEarnings: 1000,
+        availableProfits: 250,
+        completedTasks: 15,
+        totalViews: 10000,
+        balance: parseFloat(balanceInEth).toFixed(4)
+      });
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      toast({
+        title: "Error fetching data",
+        description: "Please try again later",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }
 
   const handleClaimProfits = async () => {
     setClaimingProfits(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500)) // Simulating API call
+      // Replace this with actual blockchain transaction
+      await new Promise(resolve => setTimeout(resolve, 1500)) // Simulating transaction
       toast({
         title: "Profits claimed successfully!",
         status: "success",
         duration: 3000,
         isClosable: true,
       })
+      // Update user stats after claiming
+      await fetchUserStats();
     } catch (error) {
       toast({
         title: "Failed to claim profits",
@@ -53,21 +86,25 @@ export default function DashboardPage() {
     }
   }
 
-   return (
+  if (!isWeb3AuthReady || !isConnected) {
+    return null; // or a loading spinner
+  }
+
+  return (
     <Layout>
       <Box p={6} maxW="container.md" mx="auto" mt={isMobile ? "60px" : "80px"} bg="#f5f1e8" color="black">
         <VStack spacing={8} align="stretch">
           <Heading fontSize={["2xl", "3xl"]} fontWeight="medium">
-            Welcome back, {session?.user?.name}
+            Welcome back, {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'User'}
           </Heading>
           
           <SimpleGrid columns={[1, 2]} spacing={6}>
+            <StatBox label="Wallet Balance" value={`${userStats.balance} ETH`} />
             <StatBox label="Total Earnings" value={`$${userStats.totalEarnings.toFixed(2)}`} />
             <StatBox label="Available Profits" value={`$${userStats.availableProfits.toFixed(2)}`} />
             <StatBox label="Completed Tasks" value={userStats.completedTasks} />
             <StatBox label="Total Views" value={userStats.totalViews.toLocaleString()} />
           </SimpleGrid>
-
           <Box borderWidth="1px" borderColor="black" p={6} borderRadius="md" bg="white">
             <Flex direction="column" align="center" gap={4}>
               <Text fontSize="lg" fontWeight="medium" color="gray.600">
