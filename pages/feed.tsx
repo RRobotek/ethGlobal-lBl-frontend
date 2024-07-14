@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useSwipeable } from "react-swipeable";
 import { Box, Button, VStack, Text, Flex, useToast, Spinner, Icon } from "@chakra-ui/react";
 import { FaTag } from "react-icons/fa";
@@ -8,9 +8,15 @@ import { useWeb3AuthContext } from '../contexts/Web3AuthContext';
 const BUFFER_SIZE = 5;
 const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
 
+interface Post {
+  data_id: string;
+  url: string;
+  label_options: string[];
+}
+
 export default function FeedPage() {
   const { web3, address, isConnected } = useWeb3AuthContext();
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState(0);
@@ -24,7 +30,7 @@ export default function FeedPage() {
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
-      const newPosts = await response.json();
+      const newPosts: Post[] = await response.json();
       console.log("Fetched posts:", newPosts);
       setPosts(prevPosts => [...prevPosts, ...newPosts]);
     } catch (error) {
@@ -64,13 +70,12 @@ export default function FeedPage() {
   const handlers = useSwipeable({
     onSwipedUp: goToNextPost,
     onSwipedDown: goToPreviousPost,
-    preventDefaultTouchmoveEvent: true,
     trackMouse: true
   });
 
   useEffect(() => {
     fetchPosts();
-  }, []);
+  }, [fetchPosts]);
 
   useEffect(() => {
     if (currentIndex >= posts.length - 5 && !isLoading) {
@@ -79,8 +84,8 @@ export default function FeedPage() {
     }
   }, [currentIndex, posts.length, isLoading, fetchPosts]);
 
-  const handleLabelClick = async (label) => {
-    if (!isConnected) {
+  const handleLabelClick = async (label: string) => {
+    if (!isConnected || !address) {
       toast({
         title: "Error",
         description: "You must be connected to label posts.",
@@ -127,7 +132,7 @@ export default function FeedPage() {
     }
   };
 
-  const renderPost = (post, index) => (
+  const renderPost = (post: Post, index: number) => (
     <Box
       key={index}
       position="absolute"

@@ -5,37 +5,29 @@ import Layout from "../components/layout"
 import { useWeb3AuthContext } from "../contexts/Web3AuthContext"
 import Web3 from "web3"
 
-const CONTRACT_ADDRESS = "0x6Efe62FE16CcAAb7e68923C42002308fc0011BC5";
-const CONTRACT_ABI = [
-  {
-    "inputs": [{"internalType": "address", "name": "", "type": "address"}],
-    "name": "balances",
-    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "claim",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  }
-];
+import { CONTRACT_ABI, CONTRACT_ADDRESS, USDC_ABI, USDC_CONTRACT_ADDRESS } from "../constants"
+
+interface UserStats {
+  totalEarnings: number;
+  completedTasks: number;
+  balance: string;
+  usdcBalance: string;
+}
 
 export default function DashboardPage() {
   const { web3, address, isConnected, isWeb3AuthReady } = useWeb3AuthContext()
-  const [claimingProfits, setClaimingProfits] = useState(false)
-  const [userStats, setUserStats] = useState({
+  const [claimingProfits, setClaimingProfits] = useState<boolean>(false)
+  const [userStats, setUserStats] = useState<UserStats>({
     totalEarnings: 0,
     completedTasks: 0,
-    balance: '0'
+    balance: '0',
+    usdcBalance: '0'
   })
+
   const toast = useToast()
   const [isMobile] = useMediaQuery("(max-width: 48em)")
   const router = useRouter()
   const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
-
 
   useEffect(() => {
     if (isWeb3AuthReady && !isConnected) {
@@ -53,11 +45,18 @@ export default function DashboardPage() {
   }, [isWeb3AuthReady, isConnected, web3, router, toast]);
 
   const fetchUserStats = async () => {
+    if (!web3 || !address) return;
+
     try {
-      const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+      const contract = new web3.eth.Contract(CONTRACT_ABI as any, CONTRACT_ADDRESS);
       
       const balance = await web3.eth.getBalance(address);
       const balanceInEth = Web3.utils.fromWei(balance, 'ether');
+
+      const usdcContract = new web3.eth.Contract(USDC_ABI as any, USDC_CONTRACT_ADDRESS);
+      const usdcBalance = await usdcContract.methods.balanceOf(address).call();
+      console.log(`USDC BALANCE: ${usdcBalance}`);
+      const usdcBalanceInEth = Number(usdcBalance) / 10 ** 6;
 
       const response = await fetch(`${API_BASE_URL}/logic/amountofvotesforuser/${address}`);
       const data = await response.json();
@@ -66,7 +65,8 @@ export default function DashboardPage() {
       setUserStats({
         totalEarnings: 32.9,
         completedTasks: completedTasks,
-        balance: parseFloat(balanceInEth).toFixed(4)
+        balance: parseFloat(balanceInEth).toFixed(4),
+        usdcBalance: usdcBalanceInEth.toFixed(2)
       });
     } catch (error) {
       console.error("Error fetching user stats:", error);
@@ -81,9 +81,11 @@ export default function DashboardPage() {
   }
 
   const handleClaimProfits = async () => {
+    if (!web3 || !address) return;
+
     setClaimingProfits(true)
     try {
-      const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+      const contract = new web3.eth.Contract(CONTRACT_ABI as any, CONTRACT_ADDRESS);
       await contract.methods.claim().send({ from: address });
       
       toast({
@@ -123,7 +125,9 @@ export default function DashboardPage() {
             <StatBox label="Wallet Balance" value={`${userStats.balance} USDC`} />
             <StatBox label="Total Earnings" value={`$${userStats.totalEarnings.toFixed(2)}`} />
           </SimpleGrid>
-                    <StatBox label="Completed Tasks" value={userStats.completedTasks} />
+
+          <StatBox label="Completed Tasks" value={userStats.completedTasks.toString()} />
+          <StatBox label="USDC Balance" value={`${userStats.usdcBalance} USDC`} />
 
           <Box borderWidth="1px" borderColor="black" p={6} borderRadius="md" bg="white">
             <Flex direction="column" align="center" gap={4}>
@@ -141,7 +145,7 @@ export default function DashboardPage() {
                 onClick={handleClaimProfits}
                 isLoading={claimingProfits}
                 loadingText="Claiming..."
-                disabled={userStats.totalEarnings <= 0}
+                isDisabled={userStats.totalEarnings <= 0}
                 width="full"
               >
                 Claim Profits
@@ -154,7 +158,12 @@ export default function DashboardPage() {
   )
 }
 
-const StatBox = ({ label, value }) => (
+interface StatBoxProps {
+  label: string;
+  value: string | number;
+}
+
+const StatBox: React.FC<StatBoxProps> = ({ label, value }) => (
   <Box borderWidth="1px" borderColor="black" p={3} borderRadius="md" textAlign="center" bg="white">
     <Text fontSize="xs" fontWeight="medium" color="gray.600" mb={1}>
       {label}

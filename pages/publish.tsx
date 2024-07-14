@@ -26,6 +26,9 @@ import {
 import { AddIcon, CloseIcon, AttachmentIcon, CheckIcon, WarningIcon } from '@chakra-ui/icons';
 import { FaFolderOpen, FaUpload, FaTags, FaEthereum, FaDatabase, FaImage, FaPlus } from 'react-icons/fa';
 
+
+import { CONTRACT_ABI, CONTRACT_ADDRESS, USDC_ABI, USDC_CONTRACT_ADDRESS } from "../constants"
+
 const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
 
 export default function PublishDatasetPage() {
@@ -34,7 +37,7 @@ export default function PublishDatasetPage() {
   const [labelOptions, setLabelOptions] = useState<string[]>(['', '']);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [price, setPrice] = useState<string>('0.00');
+  const [price, setPrice] = useState<string>('10.00');
   const [datasetName, setDatasetName] = useState('');
   const [datasetDescription, setDatasetDescription] = useState('');
   const toast = useToast();
@@ -135,6 +138,34 @@ export default function PublishDatasetPage() {
       const datasetData = await datasetResponse.json();
       console.log(datasetData);
       const datasetId = datasetData.dataset_id;
+
+      // Step 1.5: Contract interaction
+
+      // Step 1.5.1: Approve USDC transfer
+      if (web3) {
+        const usdcContract = new web3.eth.Contract(USDC_ABI, USDC_CONTRACT_ADDRESS);
+
+        const priceInWei = BigInt(Number(price) * 1e6).toString();
+
+        const approveResponse = await usdcContract.methods.approve(CONTRACT_ADDRESS, priceInWei).send({ from: address });
+
+        if (!approveResponse.status) {
+          throw new Error('Failed to approve USDC transfer');
+        }
+
+        // Step 1.5.2: Create dataset bounty
+        const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+
+        const bountyResponse = await contract.methods.createDatasetBounty(datasetId, priceInWei).send({ from: address });
+
+        if (!bountyResponse.status) {
+          throw new Error('Failed to create dataset bounty');
+        }
+
+
+      } else {
+        throw new Error('Web3 not initialized');
+      }
 
       // Step 2: Upload data
       for (let i = 0; i < files.length; i++) {
@@ -353,7 +384,7 @@ export default function PublishDatasetPage() {
             <NumberInput 
               value={price} 
               onChange={(valueString) => setPrice(valueString)}
-              min={0} 
+              min={10} 
               precision={2} 
               step={0.01}
             >

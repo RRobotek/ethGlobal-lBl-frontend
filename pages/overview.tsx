@@ -17,10 +17,14 @@ import {
   Heading, 
   Stack,
   Badge,
-  useToast
+  useToast,
+  Divider,
+  Tooltip
 } from "@chakra-ui/react";
-import { FaDatabase, FaTag, FaUserAlt, FaCalendarAlt, FaStopCircle } from "react-icons/fa";
-import { ViewIcon, CheckCircleIcon, WarningIcon } from '@chakra-ui/icons';
+import { FaDatabase, FaTag, FaUserAlt, FaCalendarAlt, FaStopCircle, FaImages, FaCheckCircle } from "react-icons/fa";
+import { ViewIcon, CheckCircleIcon, WarningIcon, InfoIcon } from '@chakra-ui/icons';
+
+import { CONTRACT_ADDRESS, CONTRACT_ABI, USDC_ABI, USDC_CONTRACT_ADDRESS } from '../constants';
 
 const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
 
@@ -91,9 +95,26 @@ export default function MyDatasetsPage() {
     }
   };
 
-  const handleEndLabeling = (datasetId: string) => {
+  const handleEndLabeling = async (datasetId: string) => {
     console.log(`End labeling process for dataset: ${datasetId}`);
-    // TODO: Implement the actual end labeling functionality
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/logic/endlabelling/${datasetId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (error) {
+      console.error('Error ending labeling:', error);
+      toast({
+        title: "Error",
+        description: "Failed to end labeling process. Please try again later.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   if (!isWeb3AuthReady || !isConnected) {
@@ -141,49 +162,73 @@ export default function MyDatasetsPage() {
 
   return (
     <Layout>
-      <Box minHeight="100vh" bg="#f5f1e8" color="black" pt="70px" px={4}>
+      <Box minHeight="100vh" bg="#f5f1e8" color="black" pt="80px" px={6}>
         <VStack spacing={8} align="stretch">
-          <Heading as="h1" size="xl" textAlign="center">
+          <Heading as="h1" size="2xl" textAlign="center" color="#333">
+            <Icon as={FaDatabase} mr={3} color="#ffd598" />
             My Datasets
           </Heading>
 
           {datasets.length === 0 ? (
-            <Flex justify="center" align="center" height="50vh">
-              <Text fontSize="xl" color="gray.600">
+            <Flex justify="center" align="center" height="50vh" direction="column">
+              <Icon as={FaImages} boxSize={16} color="#ffd598" mb={4} />
+              <Text fontSize="xl" color="gray.600" textAlign="center">
                 You haven't uploaded any datasets yet.
+                <br />
+                Start by adding your first dataset!
               </Text>
             </Flex>
           ) : (
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
               {datasets.map((dataset) => (
-                <Card key={dataset.dataset_id} bg="white" borderRadius="lg" boxShadow="md">
+                <Card key={dataset.dataset_id} bg="white" borderRadius="lg" boxShadow="lg" overflow="hidden">
                   <CardBody>
-                    <Stack spacing={1}>
-                      <img src={`data:image/png;base64, ${dataset.thumbnail}`} alt={`${dataset.name} thumbnail`} style={{ borderRadius: '8px' }} />
-                      <Heading size="md" color="#ffd598">{dataset.name}</Heading>
-                      <Text>{dataset.description}</Text>
-                      <Flex align="center">
-                        <Text fontSize="sm">Label Options: {dataset.label_options.join(', ')}</Text>
+                    <Stack spacing={4}>
+                      <Box borderRadius="md" overflow="hidden" height="200px">
+                        <img src={`data:image/png;base64, ${dataset.thumbnail}`} alt={`${dataset.name} thumbnail`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </Box>
+                      <Heading size="lg" color="#333" fontWeight="bold">{dataset.name}</Heading>
+                      <Text color="gray.600" fontSize="md">{dataset.description}</Text>
+                      <Divider />
+                      <Flex align="center" justify="space-between">
+                        <Flex align="center">
+                          <Icon as={FaTag} mr={2} color="#ffd598" />
+                          <Text fontSize="sm" fontWeight="medium">Label Options:</Text>
+                        </Flex>
+                        <Text fontSize="sm" color="gray.600">{dataset.label_options.join(', ')}</Text>
                       </Flex>
                       
-                      <Flex align="center">
-                        <Icon as={CheckCircleIcon} mr={2} color="#ffd598" />
-                        <Text fontSize="sm">Confidence: {Math.round(dataset.accuracy * 100)}% </Text>
+                      <Flex align="center" justify="space-between">
+                        <Flex align="center">
+                          <Icon as={FaCheckCircle} mr={2} color="#4CAF50" />
+                          <Text fontSize="sm" fontWeight="medium">Confidence:</Text>
+                        </Flex>
+                        <Text fontSize="sm" color="gray.600">{Math.round(dataset.accuracy * 100)}%</Text>
                       </Flex>
-                      <Flex justify="space-between">
-                        <Badge colorScheme="green">Labels Received: {dataset.labels_received}</Badge>
+                      
+                      <Flex align="center" justify="space-between">
+                        <Flex align="center">
+                          <Icon as={FaImages} mr={2} color="#2196F3" />
+                          <Text fontSize="sm" fontWeight="medium">Labels Received:</Text>
+                        </Flex>
+                        <Badge colorScheme="green" fontSize="sm" px={2} py={1} borderRadius="full">
+                          {dataset.labels_received}
+                        </Badge>
                       </Flex>
                     </Stack>
                   </CardBody>
-                  <CardFooter>
-                    <Button 
-                      leftIcon={<FaStopCircle />} 
-                      colorScheme="red" 
-                      onClick={() => handleEndLabeling(dataset.dataset_id)}
-                      width="100%"
-                    >
-                      End Labeling
-                    </Button>
+                  <CardFooter bg="gray.50" borderTop="1px" borderColor="gray.200">
+                    <Tooltip label="End the labeling process for this dataset" hasArrow>
+                      <Button 
+                        leftIcon={<FaStopCircle />} 
+                        colorScheme="red" 
+                        onClick={() => handleEndLabeling(dataset.dataset_id)}
+                        width="100%"
+                        _hover={{ bg: "red.600" }}
+                      >
+                        End Labeling
+                      </Button>
+                    </Tooltip>
                   </CardFooter>
                 </Card>
               ))}
