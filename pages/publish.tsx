@@ -348,7 +348,7 @@ export default function PublishDatasetPage() {
 
             <Flex align="center" width="full">
               <FaEthereum color="black" />
-              <Text ml={2} fontWeight="bold" color="black">Set Price (ETH)</Text>
+              <Text ml={2} fontWeight="bold" color="black">Set Bounty (USDC)</Text>
             </Flex>
             <NumberInput 
               value={price} 

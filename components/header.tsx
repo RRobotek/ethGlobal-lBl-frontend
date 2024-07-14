@@ -48,12 +48,12 @@ export default function Header() {
   return (
     <Box as="header" bg={bgColor} py={2} position="fixed" top={0} left={0} right={0} zIndex={1000} boxShadow="0 2px 4px rgba(0,0,0,0.1)">
       <Flex maxW="container.xl" mx="auto" px={4} justifyContent="space-between" alignItems="center">
-        <div>
+        <Text color={textColor} fontWeight="bold">
           {isConnected && address ? 
             `Address: ${address.slice(0, 6)}...${address.slice(-4)}` : 
             "Not connected"
           }
-        </div>
+        </Text>
         <Flex alignItems="center">
           {!isWeb3AuthReady ? (
             <Text>Initializing...</Text>

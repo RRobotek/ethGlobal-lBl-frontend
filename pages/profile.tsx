@@ -1,9 +1,27 @@
 import { useState, useEffect } from "react"
 import { useRouter } from 'next/router'
-import { Box, Flex, VStack, Heading, Text, Button, useToast, SimpleGrid, useMediaQuery } from "@chakra-ui/react"
+import { Box, Flex, VStack, Heading, Text, Button, useToast, SimpleGrid, useMediaQuery, Container } from "@chakra-ui/react"
 import Layout from "../components/layout"
 import { useWeb3AuthContext } from "../contexts/Web3AuthContext"
 import Web3 from "web3"
+
+const CONTRACT_ADDRESS = "0x6Efe62FE16CcAAb7e68923C42002308fc0011BC5";
+const CONTRACT_ABI = [
+  {
+    "inputs": [{"internalType": "address", "name": "", "type": "address"}],
+    "name": "balances",
+    "outputs": [{"internalType": "uint256", "name": "", "type": "uint256"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "claim",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+];
 
 export default function DashboardPage() {
   const { web3, address, isConnected, isWeb3AuthReady } = useWeb3AuthContext()
@@ -36,14 +54,17 @@ export default function DashboardPage() {
 
   const fetchUserStats = async () => {
     try {
-      // Fetch balance
+      const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+      
       const balance = await web3.eth.getBalance(address);
       const balanceInEth = Web3.utils.fromWei(balance, 'ether');
 
-      // For now, we'll still use mock data for other stats
+      const availableProfits = await contract.methods.balances(address).call();
+      const availableProfitsInUSDC = Web3.utils.fromWei(availableProfits, 'mwei');
+
       setUserStats({
-        totalEarnings: 1000,
-        availableProfits: 250,
+        totalEarnings: 32.9,
+        availableProfits: parseFloat(availableProfitsInUSDC),
         completedTasks: 15,
         totalViews: 10000,
         balance: parseFloat(balanceInEth).toFixed(4)
@@ -63,17 +84,18 @@ export default function DashboardPage() {
   const handleClaimProfits = async () => {
     setClaimingProfits(true)
     try {
-      // Replace this with actual blockchain transaction
-      await new Promise(resolve => setTimeout(resolve, 1500)) // Simulating transaction
+      const contract = new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+      await contract.methods.claim().send({ from: address });
+      
       toast({
         title: "Profits claimed successfully!",
         status: "success",
         duration: 3000,
         isClosable: true,
       })
-      // Update user stats after claiming
       await fetchUserStats();
     } catch (error) {
+      console.error("Error claiming profits:", error);
       toast({
         title: "Failed to claim profits",
         description: "Please try again later",
@@ -87,24 +109,25 @@ export default function DashboardPage() {
   }
 
   if (!isWeb3AuthReady || !isConnected) {
-    return null; // or a loading spinner
+    return null;
   }
 
   return (
     <Layout>
-      <Box p={6} maxW="container.md" mx="auto" mt={isMobile ? "60px" : "80px"} bg="#f5f1e8" color="black">
-        <VStack spacing={8} align="stretch">
-          <Heading fontSize={["2xl", "3xl"]} fontWeight="medium">
+      <Container maxW="container.md" px={4} bg="#f5f1e8" height="100vh">
+        <VStack spacing={6} align="stretch" mt={isMobile ? 4 : 8}>
+          <Heading fontSize={["xl", "2xl"]} fontWeight="medium" color="black">
             Welcome back, {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'User'}
           </Heading>
           
-          <SimpleGrid columns={[1, 2]} spacing={6}>
+          <SimpleGrid columns={[2, 2, 3]} spacing={4}>
             <StatBox label="Wallet Balance" value={`${userStats.balance} ETH`} />
             <StatBox label="Total Earnings" value={`$${userStats.totalEarnings.toFixed(2)}`} />
             <StatBox label="Available Profits" value={`$${userStats.availableProfits.toFixed(2)}`} />
             <StatBox label="Completed Tasks" value={userStats.completedTasks} />
             <StatBox label="Total Views" value={userStats.totalViews.toLocaleString()} />
           </SimpleGrid>
+
           <Box borderWidth="1px" borderColor="black" p={6} borderRadius="md" bg="white">
             <Flex direction="column" align="center" gap={4}>
               <Text fontSize="lg" fontWeight="medium" color="gray.600">
@@ -122,24 +145,24 @@ export default function DashboardPage() {
                 isLoading={claimingProfits}
                 loadingText="Claiming..."
                 disabled={userStats.availableProfits <= 0}
-                width={["full", "auto"]}
+                width="full"
               >
                 Claim Profits
               </Button>
             </Flex>
           </Box>
         </VStack>
-      </Box>
+      </Container>
     </Layout>
   )
 }
 
 const StatBox = ({ label, value }) => (
-  <Box borderWidth="1px" borderColor="black" p={5} borderRadius="md" textAlign="center" bg="white">
-    <Text fontSize="sm" fontWeight="medium" color="gray.600" mb={2}>
+  <Box borderWidth="1px" borderColor="black" p={3} borderRadius="md" textAlign="center" bg="white">
+    <Text fontSize="xs" fontWeight="medium" color="gray.600" mb={1}>
       {label}
     </Text>
-    <Text fontSize="2xl" fontWeight="bold" color="#ffd598">
+    <Text fontSize="sm" fontWeight="bold" color="#ffd598">
       {value}
     </Text>
   </Box>

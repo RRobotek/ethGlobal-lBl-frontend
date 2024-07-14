@@ -22,12 +22,12 @@ export const useWeb3Auth = () => {
       try {
         const chainConfig = {
           chainNamespace: CHAIN_NAMESPACES.EIP155,
-          chainId: "0x1", // Ethereum mainnet
-          rpcTarget: "https://rpc.ankr.com/eth",
-          displayName: "Ethereum Mainnet",
-          blockExplorer: "https://etherscan.io",
+          chainId: "0x14A34", // Base sepolia
+          rpcTarget: "https://sepolia.base.org",
+          displayName: "Base Sepolia",
+          blockExplorer: "https://sepolia-explorer.base.org",
           ticker: "ETH",
-          tickerName: "Ethereum",
+          tickerName: "Ether",
         };
         console.log("Chain config:", chainConfig);
 
