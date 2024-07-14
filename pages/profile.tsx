@@ -28,14 +28,14 @@ export default function DashboardPage() {
   const [claimingProfits, setClaimingProfits] = useState(false)
   const [userStats, setUserStats] = useState({
     totalEarnings: 0,
-    availableProfits: 0,
     completedTasks: 0,
-    totalViews: 0,
     balance: '0'
   })
   const toast = useToast()
   const [isMobile] = useMediaQuery("(max-width: 48em)")
   const router = useRouter()
+  const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
+
 
   useEffect(() => {
     if (isWeb3AuthReady && !isConnected) {
@@ -59,14 +59,13 @@ export default function DashboardPage() {
       const balance = await web3.eth.getBalance(address);
       const balanceInEth = Web3.utils.fromWei(balance, 'ether');
 
-      const availableProfits = await contract.methods.balances(address).call();
-      const availableProfitsInUSDC = Web3.utils.fromWei(availableProfits, 'mwei');
+      const response = await fetch(`${API_BASE_URL}/logic/amountofvotesforuser/${address}`);
+      const data = await response.json();
+      const completedTasks = data.votes || 0;
 
       setUserStats({
         totalEarnings: 32.9,
-        availableProfits: parseFloat(availableProfitsInUSDC),
-        completedTasks: 15,
-        totalViews: 10000,
+        completedTasks: completedTasks,
         balance: parseFloat(balanceInEth).toFixed(4)
       });
     } catch (error) {
@@ -121,12 +120,10 @@ export default function DashboardPage() {
           </Heading>
           
           <SimpleGrid columns={[2, 2, 3]} spacing={4}>
-            <StatBox label="Wallet Balance" value={`${userStats.balance} ETH`} />
+            <StatBox label="Wallet Balance" value={`${userStats.balance} USDC`} />
             <StatBox label="Total Earnings" value={`$${userStats.totalEarnings.toFixed(2)}`} />
-            <StatBox label="Available Profits" value={`$${userStats.availableProfits.toFixed(2)}`} />
-            <StatBox label="Completed Tasks" value={userStats.completedTasks} />
-            <StatBox label="Total Views" value={userStats.totalViews.toLocaleString()} />
           </SimpleGrid>
+                    <StatBox label="Completed Tasks" value={userStats.completedTasks} />
 
           <Box borderWidth="1px" borderColor="black" p={6} borderRadius="md" bg="white">
             <Flex direction="column" align="center" gap={4}>
@@ -134,7 +131,7 @@ export default function DashboardPage() {
                 Claimable Profits
               </Text>
               <Heading fontSize="3xl" fontWeight="bold" color="#ffd598">
-                ${userStats.availableProfits.toFixed(2)}
+                ${userStats.totalEarnings.toFixed(2)}
               </Heading>
               <Button
                 size="lg"
@@ -144,7 +141,7 @@ export default function DashboardPage() {
                 onClick={handleClaimProfits}
                 isLoading={claimingProfits}
                 loadingText="Claiming..."
-                disabled={userStats.availableProfits <= 0}
+                disabled={userStats.totalEarnings <= 0}
                 width="full"
               >
                 Claim Profits
