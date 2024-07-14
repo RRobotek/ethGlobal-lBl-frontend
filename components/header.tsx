@@ -21,7 +21,7 @@ export default function Header() {
     console.log("Address:", address);
   }, [isWeb3AuthReady, isConnected, address]);
 
-  const NavItem = ({ href, icon, children }) => (
+  const NavItem = ({ href, icon, children }: { href: string; icon: JSX.Element; children: React.ReactNode }) => (
     <Button 
       as={Link} 
       href={href} 
@@ -62,7 +62,7 @@ export default function Header() {
               bg={accentColor}
               color={textColor}
               size="sm"
-              onClick={login}
+              onClick={() => login()}
               _hover={{ bg: hoverBgColor }}
             >
               Connect Wallet
@@ -74,7 +74,7 @@ export default function Header() {
                 ml={2} 
                 size="sm" 
                 variant="ghost" 
-                onClick={logout} 
+                onClick={() => logout()}
                 color={textColor}
                 _hover={{ bg: hoverBgColor }}
               >
