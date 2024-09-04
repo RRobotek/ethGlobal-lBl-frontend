@@ -90,6 +90,7 @@ export default function PublishDatasetPage() {
     });
     return;
 
+    /*
     if (!isConnected || !address) {
       toast({
         title: "Error",
@@ -101,7 +102,6 @@ export default function PublishDatasetPage() {
       });
       return;
     }
-
     if (files.length === 0 || !datasetName || !datasetDescription) {
       toast({
         title: "Error",
@@ -113,7 +113,6 @@ export default function PublishDatasetPage() {
       });
       return;
     }
-
     if (labelOptions.some(option => option.trim() === '')) {
       toast({
         title: "Error",
@@ -125,7 +124,6 @@ export default function PublishDatasetPage() {
       });
       return;
     }
-
     try {
       const bodypay = JSON.stringify({
         label_options: labelOptions,
@@ -133,7 +131,6 @@ export default function PublishDatasetPage() {
         name: datasetName,
         description: datasetDescription
       });
-
       // Step 1: Add dataset
       const datasetResponse = await fetch(`${API_BASE_URL}/logic/add_dataset`, {
         method: 'POST',
@@ -146,19 +143,14 @@ export default function PublishDatasetPage() {
       if (!datasetResponse.ok) {
         throw new Error('Failed to create dataset');
       }
-
       const datasetData = await datasetResponse.json();
       console.log(datasetData);
       const datasetId = datasetData.dataset_id;
-
       // Step 1.5: Contract interaction
-
       // Step 1.5.1: Approve USDC transfer
       if (web3) {
         const usdcContract = new web3.eth.Contract(USDC_ABI, USDC_CONTRACT_ADDRESS);
-
         const priceInWei = BigInt(Number(price) * 1e6).toString();
-
         const approveResponse = await usdcContract.methods.approve(CONTRACT_ADDRESS, priceInWei).send({ from: address });
 
         if (!approveResponse.status) {
@@ -227,6 +219,7 @@ export default function PublishDatasetPage() {
         icon: <WarningIcon />
       });
     }
+    */
   };
 
   if (!isWeb3AuthReady || !isConnected) {
