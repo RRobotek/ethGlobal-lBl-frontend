@@ -29,7 +29,7 @@ import { FaFolderOpen, FaUpload, FaTags, FaEthereum, FaDatabase, FaImage, FaPlus
 
 import { CONTRACT_ABI, CONTRACT_ADDRESS, USDC_ABI, USDC_CONTRACT_ADDRESS } from "../constants"
 
-const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
+const API_BASE_URL = 'https://lablr-htbqdxhmdyc3cafz.westeurope-01.azurewebsites.net/';
 
 export default function PublishDatasetPage() {
   const { web3, address, isConnected, isWeb3AuthReady } = useWeb3AuthContext();
@@ -78,6 +78,18 @@ export default function PublishDatasetPage() {
   };
 
   const handleSubmit = async () => {
+
+    // DEMO
+    toast({
+      title: "Error",
+      description: "This is a demo. Publishing datasets is disabled.",
+      status: "error",
+      duration: 3000,
+      isClosable: true,
+      icon: <WarningIcon />
+    });
+    return;
+
     if (!isConnected || !address) {
       toast({
         title: "Error",

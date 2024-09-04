@@ -27,7 +27,7 @@ export default function DashboardPage() {
   const toast = useToast()
   const [isMobile] = useMediaQuery("(max-width: 48em)")
   const router = useRouter()
-  const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
+  const API_BASE_URL = 'https://lablr-htbqdxhmdyc3cafz.westeurope-01.azurewebsites.net/';
 
   useEffect(() => {
     if (isWeb3AuthReady && !isConnected) {

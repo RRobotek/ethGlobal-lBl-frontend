@@ -6,7 +6,8 @@ import Layout from "../components/layout";
 import { useWeb3AuthContext } from '../contexts/Web3AuthContext';
 
 const BUFFER_SIZE = 5;
-const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
+
+const API_BASE_URL = 'https://lablr-htbqdxhmdyc3cafz.westeurope-01.azurewebsites.net/';
 
 interface Post {
   data_id: string;

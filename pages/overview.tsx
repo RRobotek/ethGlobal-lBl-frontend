@@ -26,7 +26,7 @@ import { ViewIcon, CheckCircleIcon, WarningIcon, InfoIcon } from '@chakra-ui/ico
 
 import { CONTRACT_ADDRESS, CONTRACT_ABI, USDC_ABI, USDC_CONTRACT_ADDRESS } from '../constants';
 
-const API_BASE_URL = 'https://goldfish-app-jyk4z.ondigitalocean.app/ethglobal-lbl-backend2';
+const API_BASE_URL = 'https://lablr-htbqdxhmdyc3cafz.westeurope-01.azurewebsites.net/';
 
 interface Dataset {
   dataset_id: string;
